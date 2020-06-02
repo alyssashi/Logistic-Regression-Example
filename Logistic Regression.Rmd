@@ -25,7 +25,7 @@ library(plotROC)
 spotify <- read.csv("Data/spotify.txt")
 ```
 
-### Exercise 1
+### Data Wrangling and EDA
 
 Refactoring variables:
 
@@ -56,7 +56,7 @@ spotify %>%
 
 Songs in the key D have the highest proportion of likes (59.24%), followed by Other (50.34%) and D# (31.75%).
 
-### Exercise 2
+### Model Fitting
 
 Fit a logistic regression model with `like` as the response variable and the following as predictors: `acousticness`, `danceability`, `duration_ms`, `instrumentalness`, `loudness`, `speechiness`, and `valence`:
 
@@ -68,7 +68,7 @@ tidy(logit_red, conf.int = T) %>%
   kable(format = "markdown", digits = 3)
 ```
 
-### Exercise 3
+### Drop in Deviance
 
 Add the variable `key` to the model created above and use a drop-in deviance test to see if this variable should be included. 
 
@@ -92,7 +92,7 @@ logit_full$aic
 
 The AIC for the model from Exercise 3 with the addition of `key` as a predictor variable is 2525.16 compared to the AIC of the model without the addition of `key` at 2534.517. The model with `key` is more ideal because a lower AIC indicates a better fitted model.
 
-### Exercise 4
+### Interpretation
 
 ```{r}
 tidy(logit_full, conf.int = T) %>%
@@ -101,9 +101,7 @@ tidy(logit_full, conf.int = T) %>%
 
 The predicted odds that a user likes a song in the key D# are exp{-1.073)} = `r round (exp(-1.073),3)` times the odds of a like for songs in the key D (the baseline), holding all else constant.
 
-### Exercise 5
-
-Calculating predicted probabilities and residuals:
+### Calculating Predicted Probabilities and Residuals
 
 ```{r}
 logit_aug <- augment(logit_full, 
@@ -111,7 +109,7 @@ logit_aug <- augment(logit_full,
                           type.residuals = "response")
 ```
 
-### Exercise 6
+### Checking Assumptions (Linearity)
 
 Create a binned plot of the residuals versus the predicted probabilities:
 
@@ -123,10 +121,6 @@ arm::binnedplot(x = logit_aug$.fitted,
                 col.int = FALSE)
 ```
 
-### Exercise 7
-
-Checking assumptions:
-
 We chose the quantitative variable `duration_ms` and used a binned residuals plot to examine the residuals versus this predictor variable.
 
 ```{r}
@@ -137,8 +131,6 @@ arm::binnedplot(x = logit_aug$duration_ms,
                 main = "Binned Residual vs. Duration of Track (milliseconds)")
 ```
 
-### Exercise 8
-
 We chose the categorical variable `key` and found the mean value of the residuals for each of the three levels.
 
 ```{r}
@@ -147,11 +139,9 @@ logit_aug %>%
   summarise(mean_resid = mean(.resid))
 ```
 
-### Exercise 9
-
 Based on the plots from exercises 6-7, it seems as though the linearity assumption is satisfied. This is because there is no apparent shape in the plots of the predicted values versus the residuals, nor do the observations follow any sorts of linear lines. Additionally, the mean residuals in exercise 8 are all very close to 0, indicating that the linearity assumption is satisfied for `key`.  
 
-### Exercise 10
+### ROC and AUC
 
 ROC curve and calculating AUC:
 
@@ -172,17 +162,17 @@ calc_auc(roc_curve)$AUC
 
 As seen above, the area under the curve for the ROC curve is approximately 0.714.
 
-### Exercise 11
+### Interpretation
 
 Based on the ROC curve and AUC from the previous exercise, it seems as though this model does about an average job of differentiating between songs the user likes and doesn't like. An AUC score closer to 1 is typically a better fit (whereas 0.5 means a very bad fit), and the AUC score of this particular curve was 0.714 which was almost exactly in the middle of the spectrum.
 
-### Exercise 12
+### Choosing a Threshold
 
 The threshold value we chose was 0.5. This is because, as we examined the ROC curve, we thought a threshold value of around 0.5 would be the best compromise for a high true positive rate and low false positive rate. After a threshold value of 0.5, the slope of the ROC curve seems to decrease, meaning a lower increase in the true positive rate compared to a greater increase in the false positive rate. 
 
 Keeping in mind Spotify's goal of recommending songs a user has a high liklihood of liking, we decided that a threshold of 0.5 would recommend songs that a user has a pretty high probability of liking, without annoying the user by recommending a bunch of songs they don't like.
 
-### Exercise 13
+### Creating Confusion Matrix
 
 ```{r thresh}
 threshold <- 0.5
@@ -193,11 +183,10 @@ logit_aug %>%
   kable(format="markdown")
 ```
 
-### Exercise 14
+### Misclassification Rates
 
 The proportion of true positives is: $$668/(668 + 352) \approx 0.655$$
 
 The proportion of false positives is: $$1 - 687/(687 + 310) \approx 0.311 $$
 
 The misclassification rate is: $$(310 + 352)/(687 + 310 + 352 + 668) \approx 0.328$$
-© 2020 GitHub, Inc.
